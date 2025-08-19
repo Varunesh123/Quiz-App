@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Plus, Play, Trophy, BookOpen, Clock, Users, TrendingUp, Star, Filter } from 'lucide-react';
+import { Search, Plus, Play, Trophy, BookOpen, Clock, Users, TrendingUp, Star, Filter, LogIn, UserPlus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import QuizTaker from '../components/QuizTaker';
 import QuizGenerator from '../components/QuizGenerator';
 import PerformanceTracker from '../components/PerformanceTracker';
@@ -19,6 +20,7 @@ const Dashboard = () => {
     completedQuizzes: 0,
     streak: 0
   });
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchQuizzes();
@@ -97,9 +99,27 @@ const Dashboard = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Quiz Dashboard</h1>
-          <p className="text-gray-600">Track your progress and challenge yourself with new quizzes</p>
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-bold text-gray-900 mb-2">Quiz Dashboard</h1>
+            <p className="text-gray-600">Track your progress and challenge yourself with new quizzes</p>
+          </div>
+          <div className="flex gap-4">
+            <button
+              onClick={() => navigate('/login')}
+              className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
+            >
+              <LogIn className="h-5 w-5" />
+              Login
+            </button>
+            <button
+              onClick={() => navigate('/register')}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
+            >
+              <UserPlus className="h-5 w-5" />
+              Sign Up
+            </button>
+          </div>
         </div>
 
         {/* Stats Cards */}
