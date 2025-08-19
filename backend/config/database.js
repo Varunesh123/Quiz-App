@@ -5,18 +5,13 @@ const logger = require('../utils/logger');
 const connectDB = async () => {
   try {
     const conn = await mongoose.connect(process.env.MONGODB_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      maxPoolSize: 10, // Maintain up to 10 socket connections
-      serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
-      socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
-      bufferCommands: false, // Disable mongoose buffering
-      bufferMaxEntries: 0 // Disable mongoose buffering
+      maxPoolSize: 10,
+      serverSelectionTimeoutMS: 10000, // Increase to 10 seconds
+      socketTimeoutMS: 45000,
     });
 
     logger.info(`MongoDB Connected: ${conn.connection.host}`);
 
-    // Connection error handling
     mongoose.connection.on('error', (err) => {
       logger.error(`MongoDB connection error: ${err}`);
     });
@@ -36,4 +31,3 @@ const connectDB = async () => {
 };
 
 module.exports = connectDB;
-
