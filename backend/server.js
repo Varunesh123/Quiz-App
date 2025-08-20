@@ -96,6 +96,21 @@ app.get('/api/health', (req, res) => {
 });
 
 // API Routes
+// Add this before the error handling middleware
+app.get('/', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'Welcome to the Quiz API',
+    version: '1.0.0',
+    endpoints: {
+      health: '/api/health',
+      auth: '/api/auth',
+      quizzes: '/api/quizzes',
+      users: '/api/users',
+      analytics: '/api/analytics'
+    }
+  });
+});
 app.use('/api/auth', authRoutes.router); // Changed from authRoutes to authRoutes.router
 app.use('/api/quizzes', quizRoutes);
 app.use('/api/users', userRoutes);
