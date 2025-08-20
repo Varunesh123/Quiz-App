@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Users } from 'lucide-react';
+import {register} from '../services/api.jsx'; // Import the register function from api.js
 
-const Register = ({ onLogin }) => {
+const Register = ({ onLogin = () => {} }) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -71,22 +72,18 @@ const Register = ({ onLogin }) => {
         throw new Error('Please choose a stronger password');
       }
 
-      // Simulated API call - replace with actual register() call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      const mockResponse = { 
-        data: { 
-          token: 'mock-jwt-token', 
-          user: { email: formData.email, name: formData.name } 
-        } 
-      };
-      
-      // Note: In a real app, you'd use localStorage here
-      // localStorage.setItem('token', mockResponse.data.token);
-      
-      onLogin(mockResponse.data.user);
+      // Call the register API
+      const response = await register({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password
+      });
+
+      // Store token and call onLogin with user data
+      localStorage.setItem('token', response.data.token);
+      onLogin(response.data.user || { email: formData.email, name: formData.name });
     } catch (err) {
-      setError(err.message || 'Registration failed. Please try again.');
+      setError(err.response?.data?.message || err.message || 'Registration failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -239,4 +236,5 @@ const Register = ({ onLogin }) => {
     </div>
   );
 };
+
 export default Register;
