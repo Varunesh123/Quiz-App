@@ -1,8 +1,9 @@
-// middleware/authMiddleware.js
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const logger = require('../utils/logger');
-const redisClient = require('../config/redis');
+
+// In-memory token blacklist
+const tokenBlacklist = new Map();
 
 // Protect routes - authentication required
 const protect = async (req, res, next) => {
@@ -21,7 +22,7 @@ const protect = async (req, res, next) => {
 
   try {
     // Check if token is blacklisted (logout)
-    const blacklisted = await redisClient.get(`blacklist_${token}`);
+    const blacklisted = tokenBlacklist.get(`blacklist_${token}`);
     if (blacklisted) {
       return res.status(401).json({
         success: false,

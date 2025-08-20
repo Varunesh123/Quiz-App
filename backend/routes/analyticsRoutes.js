@@ -5,9 +5,10 @@ const QuizAttempt = require('../models/QuizAttempt');
 const User = require('../models/User');
 const { protect, authorize } = require('../middleware/authMiddleware');
 const logger = require('../utils/logger');
-const redisClient = require('../config/redis');
 
 const router = express.Router();
+
+const userAnalyticsCache = new Map();
 
 // @desc    Get user analytics
 // @route   GET /api/analytics/user
@@ -36,10 +37,10 @@ router.get('/user', protect, async (req, res) => {
 
     // Cache key
     const cacheKey = `analytics:user:${req.user._id}:${timeframe}`;
-    const cached = await redisClient.get(cacheKey);
+    const cached = userAnalyticsCache.get(cacheKey);
     
     if (cached) {
-      return res.status(200).json(JSON.parse(cached));
+      return res.status(200).json(cached);
     }
 
     // Get user's attempts in timeframe
@@ -134,7 +135,8 @@ router.get('/user', protect, async (req, res) => {
     };
 
     // Cache for 15 minutes
-    await redisClient.setEx(cacheKey, 900, JSON.stringify(analytics));
+    userAnalyticsCache.set(cacheKey, analytics);
+    setTimeout(() => userAnalyticsCache.delete(cacheKey), 900 * 1000);
 
     res.status(200).json(analytics);
   } catch (error) {
@@ -315,12 +317,3 @@ function generateRecommendations(categoryPerformance, userStats) {
 }
 
 module.exports = router;
-
-
-
-
-
-
-
-
-

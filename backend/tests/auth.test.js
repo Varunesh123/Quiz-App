@@ -69,7 +69,6 @@ console.log('🚀 Optimized Quiz Backend API Complete!');
 console.log('📁 Features included:');
 console.log('  ✅ JWT Authentication & Authorization');
 console.log('  ✅ MongoDB with Mongoose ODM');
-console.log('  ✅ Redis Caching');
 console.log('  ✅ Rate Limiting & Security');
 console.log('  ✅ Input Validation & Sanitization');
 console.log('  ✅ Comprehensive Error Handling');

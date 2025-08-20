@@ -13,7 +13,6 @@ require('dotenv').config();
 const { errorHandler, notFound } = require('./middleware/errorMiddleware.js');
 const logger = require('./utils/logger');
 const connectDB = require('./config/database');
-const redisClient = require('./config/redis');
 
 // Route imports
 const authRoutes = require('./routes/authRoutes');
@@ -25,9 +24,6 @@ const app = express();
 
 // Connect to MongoDB
 connectDB();
-
-// Connect to Redis
-redisClient.connect();
 
 // Security Middleware
 app.use(helmet({
@@ -100,7 +96,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // API Routes
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', authRoutes.router); // Changed from authRoutes to authRoutes.router
 app.use('/api/quizzes', quizRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/analytics', analyticsRoutes);
@@ -120,10 +116,8 @@ process.on('SIGTERM', () => {
   logger.info('SIGTERM received, shutting down gracefully');
   server.close(() => {
     mongoose.connection.close();
-    redisClient.disconnect();
     process.exit(0);
   });
 });
 
 module.exports = app;
-

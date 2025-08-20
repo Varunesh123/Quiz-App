@@ -6,10 +6,11 @@ const User = require('../models/User');
 const { protect } = require('../middleware/authMiddleware');
 const { validateRegister, validateLogin } = require('../middleware/validationMiddleware');
 const logger = require('../utils/logger');
-const redisClient = require('../config/redis');
 const jwt = require('jsonwebtoken');
 
 const router = express.Router();
+
+const blacklistedTokens = new Set();
 
 // @desc    Register user
 // @route   POST /api/auth/register
@@ -107,14 +108,6 @@ router.post('/login', validateLogin, async (req, res) => {
     // Generate token
     const token = user.getSignedJwtToken();
 
-    // Cache user session in Redis
-    await redisClient.setEx(`user_${user._id}`, 3600, JSON.stringify({
-      id: user._id,
-      email: user.email,
-      role: user.role,
-      lastLogin: user.lastLogin
-    }));
-
     logger.info(`User logged in: ${user.email}`);
 
     res.status(200).json({
@@ -149,14 +142,12 @@ router.post('/logout', protect, async (req, res) => {
   try {
     const token = req.headers.authorization.split(' ')[1];
     
-    // Add token to blacklist in Redis
+    // Add token to blacklist
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const expiresIn = decoded.exp - Math.floor(Date.now() / 1000);
     
-    await redisClient.setEx(`blacklist_${token}`, expiresIn, 'true');
-    
-    // Remove user session from Redis
-    await redisClient.del(`user_${req.user._id}`);
+    blacklistedTokens.add(token);
+    setTimeout(() => blacklistedTokens.delete(token), expiresIn * 1000);
 
     logger.info(`User logged out: ${req.user.email}`);
 
@@ -205,6 +196,4 @@ router.get('/me', protect, async (req, res) => {
   }
 });
 
-module.exports = router;
-
-
+module.exports = { router, blacklistedTokens };

@@ -1,4 +1,3 @@
-
 // routes/quizRoutes.js
 const express = require('express');
 const Quiz = require('../models/Quiz');
@@ -7,9 +6,10 @@ const User = require('../models/User');
 const { protect, authorize } = require('../middleware/authMiddleware');
 const { validateQuiz, validatePagination } = require('../middleware/validationMiddleware');
 const logger = require('../utils/logger');
-const redisClient = require('../config/redis');
 
 const router = express.Router();
+
+const quizzesCache = new Map();
 
 // @desc    Get all quizzes with filtering, sorting, and pagination
 // @route   GET /api/quizzes
@@ -58,9 +58,9 @@ router.get('/', validatePagination, async (req, res) => {
     const cacheKey = `quizzes:${JSON.stringify(queryObj)}:${page}:${limit}:${sort}`;
     
     // Check cache first
-    const cached = await redisClient.get(cacheKey);
+    const cached = quizzesCache.get(cacheKey);
     if (cached) {
-      return res.status(200).json(JSON.parse(cached));
+      return res.status(200).json(cached);
     }
 
     // Execute query
@@ -94,7 +94,8 @@ router.get('/', validatePagination, async (req, res) => {
     };
 
     // Cache the result for 5 minutes
-    await redisClient.setEx(cacheKey, 300, JSON.stringify(result));
+    quizzesCache.set(cacheKey, result);
+    setTimeout(() => quizzesCache.delete(cacheKey), 300 * 1000);
 
     res.status(200).json(result);
   } catch (error) {
