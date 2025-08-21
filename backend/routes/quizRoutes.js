@@ -146,16 +146,17 @@ router.get('/:id', async (req, res) => {
 // @desc    Create new quiz
 // @route   POST /api/quizzes
 // @access  Private
-router.post('/', protect, validateQuiz, async (req, res) => {
+router.post('/create-quiz', protect, validateQuiz, async (req, res) => {
   try {
     // Add creator to req.body
+    console.log('Creating quiz for user:', req.user.email);
     req.body.creator = req.user._id;
 
     const quiz = await Quiz.create(req.body);
-    
+    console.log('Quiz created:', quiz.title);
     // Populate creator info
     await quiz.populate('creator', 'name email');
-
+    console.log('Quiz populated with creator:', quiz.creator.name);
     logger.info(`Quiz created: ${quiz.title} by ${req.user.email}`);
 
     res.status(201).json({

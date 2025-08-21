@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Users } from 'lucide-react';
 import {register} from '../services/api.jsx'; // Import the register function from api.js
+import { useNavigate } from "react-router-dom";
 
 const Register = ({ onLogin = () => {} }) => {
   const [formData, setFormData] = useState({
@@ -13,6 +14,7 @@ const Register = ({ onLogin = () => {} }) => {
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState(0);
+  const navigate = useNavigate()
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -82,6 +84,8 @@ const Register = ({ onLogin = () => {} }) => {
       // Store token and call onLogin with user data
       localStorage.setItem('token', response.data.token);
       onLogin(response.data.user || { email: formData.email, name: formData.name });
+
+      navigate('/login')
     } catch (err) {
       setError(err.response?.data?.message || err.message || 'Registration failed. Please try again.');
     } finally {

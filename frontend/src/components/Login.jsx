@@ -1,12 +1,15 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { BookOpen } from 'lucide-react';
+import { login } from '../services/api'; // Updated import path to match api.js
 
-const Login = ({ onLogin }) => {
+const Login = ({ onLogin = () => {} }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,17 +26,24 @@ const Login = ({ onLogin }) => {
         throw new Error('Please enter a valid email address');
       }
 
-      // Simulated API call - replace with actual login() call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const mockResponse = { data: { token: 'mock-jwt-token', user: { email, name: 'John Doe' } } };
-      
-      // Note: In a real app, you'd use localStorage here, but artifacts don't support it
-      // localStorage.setItem('token', mockResponse.data.token);
-      
-      onLogin(mockResponse.data.user);
+      // Call the login API
+      const response = await login({ email, password });
+
+      if (!response.data.success) {
+        throw new Error(response.data.message || 'Login failed');
+      }
+
+      // Store token and user data in localStorage
+      localStorage.setItem('token', response.data.data.token);
+      localStorage.setItem('user', JSON.stringify(response.data.data.user || { email, name: 'User' }));
+
+      // Call onLogin with user data
+      onLogin(response.data.data.user || { email, name: response.data.data.user?.name || 'User' });
+
+      // Navigate to /dashboard
+      navigate('/');
     } catch (err) {
-      setError(err.message || 'Login failed. Please check your credentials.');
+      setError(err.response?.data?.message || err.message || 'Login failed. Please check your credentials.');
     } finally {
       setLoading(false);
     }
@@ -136,4 +146,5 @@ const Login = ({ onLogin }) => {
     </div>
   );
 };
+
 export default Login;

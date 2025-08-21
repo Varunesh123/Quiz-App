@@ -22,6 +22,7 @@ const protect = async (req, res, next) => {
 
   try {
     // Check if token is blacklisted (logout)
+    console.log('Checking token blacklist for:', token);
     const blacklisted = tokenBlacklist.get(`blacklist_${token}`);
     if (blacklisted) {
       return res.status(401).json({
@@ -51,6 +52,7 @@ const protect = async (req, res, next) => {
     }
 
     req.user = user;
+    console.log('User authenticated:', user.email);
     next();
   } catch (error) {
     logger.error(`Auth middleware error: ${error.message}`);

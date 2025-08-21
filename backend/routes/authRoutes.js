@@ -18,10 +18,10 @@ const blacklistedTokens = new Set();
 router.post('/register', validateRegister, async (req, res) => {
   try {
     const { name, email, password } = req.body;
-    console.log("Fetched info")
+    // console.log("Fetched info")
     // Check if user exists
     const userExists = await User.findOne({ email });
-    console.log("Checking user existence")
+    // console.log("Checking user existence")
     if (userExists) {
       return res.status(400).json({
         success: false,
@@ -35,10 +35,10 @@ router.post('/register', validateRegister, async (req, res) => {
       email,
       password
     });
-    console.log("Creating user"); 
+    // console.log("Creating user"); 
     // Generate token
     const token = user.getSignedJwtToken();
-    console.log("Generating token");
+    // console.log("Generating token");
     // Remove password from output
     user.password = undefined;
 

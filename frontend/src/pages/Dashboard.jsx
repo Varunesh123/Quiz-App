@@ -4,11 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import QuizTaker from '../components/QuizTaker';
 import QuizGenerator from '../components/QuizGenerator';
 import PerformanceTracker from '../components/PerformanceTracker';
+import { getQuizzes, getPerformance, startQuiz, submitQuiz } from '../services/api';
 
-// Enhanced Dashboard Component
 const Dashboard = () => {
   const [quizzes, setQuizzes] = useState([]);
   const [selectedQuiz, setSelectedQuiz] = useState(null);
+  const [attemptId, setAttemptId] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterDifficulty, setFilterDifficulty] = useState('all');
   const [loading, setLoading] = useState(true);
@@ -30,46 +31,115 @@ const Dashboard = () => {
   const fetchQuizzes = async () => {
     try {
       setLoading(true);
-      // Simulated API call - replace with actual getQuizzes() call
-      const mockQuizzes = [
-        { _id: '1', topic: 'React Fundamentals', difficulty: 'easy', questions: 10, averageScore: 85, timeLimit: 15, createdAt: '2024-01-15' },
-        { _id: '2', topic: 'JavaScript ES6+', difficulty: 'medium', questions: 15, averageScore: 72, timeLimit: 20, createdAt: '2024-01-20' },
-        { _id: '3', topic: 'Node.js Advanced', difficulty: 'hard', questions: 12, averageScore: 65, timeLimit: 25, createdAt: '2024-01-25' }
-      ];
-      setQuizzes(mockQuizzes);
-      setStats(prev => ({ ...prev, totalQuizzes: mockQuizzes.length }));
+      const response = await getQuizzes();
+      if (response.data.success) {
+        const mappedQuizzes = response.data.data.map(quiz => ({
+          _id: quiz._id,
+          topic: quiz.title,
+          difficulty: quiz.difficulty,
+          questions: quiz.questions.length,
+          averageScore: quiz.stats?.averageScore || 0,
+          timeLimit: quiz.timeLimit,
+          createdAt: quiz.createdAt
+        }));
+        setQuizzes(mappedQuizzes);
+        setStats(prev => ({ ...prev, totalQuizzes: response.data.total }));
+      } else {
+        throw new Error(response.data.message || 'Failed to fetch quizzes');
+      }
     } catch (err) {
-      setError('Failed to load quizzes. Please try again.');
+      setError(err.message || 'Failed to load quizzes. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   const fetchStats = async () => {
-    // Simulated stats fetch
-    setStats({
-      totalQuizzes: 15,
-      averageScore: 78,
-      completedQuizzes: 12,
-      streak: 5
-    });
+    try {
+      const response = await getPerformance();
+      if (response.data.success) {
+        const data = response.data.data;
+        const calculatedStreak = calculateStreak(data.dailyPerformance);
+        setStats(prev => ({
+          ...prev,
+          averageScore: data.overview.averageScore,
+          completedQuizzes: data.overview.totalAttempts,
+          streak: calculatedStreak
+        }));
+      } else {
+        throw new Error(response.data.message || 'Failed to fetch stats');
+      }
+    } catch (err) {
+      console.error('Failed to load stats:', err);
+    }
+  };
+
+  const calculateStreak = (dailyPerformance) => {
+    if (!dailyPerformance || dailyPerformance.length === 0) return 0;
+    const sorted = [...dailyPerformance].sort((a, b) => new Date(b.date) - new Date(a.date));
+    let streak = 0;
+    let expectedDate = new Date();
+    expectedDate.setHours(0, 0, 0, 0);
+    for (let i = 0; i < sorted.length; i++) {
+      const entryDate = new Date(sorted[i].date);
+      entryDate.setHours(0, 0, 0, 0);
+      if (entryDate.getTime() === expectedDate.getTime() && sorted[i].quizCount > 0) {
+        streak++;
+        expectedDate.setDate(expectedDate.getDate() - 1);
+      } else {
+        break;
+      }
+    }
+    return streak;
+  };
+
+  const handleStartQuiz = async (quizId) => {
+    try {
+      setLoading(true);
+      const response = await startQuiz(quizId);
+      if (response.data.success) {
+        setSelectedQuiz(response.data.data.quiz);
+        setAttemptId(response.data.data.attemptId);
+      } else {
+        throw new Error(response.data.message || 'Failed to start quiz');
+      }
+    } catch (err) {
+      setError(err.message || 'Failed to start quiz. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGenerated = (newQuiz) => {
-    setQuizzes([...quizzes, newQuiz]);
+    const mappedNewQuiz = {
+      _id: newQuiz._id,
+      topic: newQuiz.title,
+      difficulty: newQuiz.difficulty,
+      questions: newQuiz.questions.length,
+      averageScore: newQuiz.stats?.averageScore || 0,
+      timeLimit: newQuiz.timeLimit,
+      createdAt: newQuiz.createdAt
+    };
+    setQuizzes([...quizzes, mappedNewQuiz]);
     setShowGenerator(false);
     setStats(prev => ({ ...prev, totalQuizzes: prev.totalQuizzes + 1 }));
+    fetchQuizzes();
   };
 
-  const handleComplete = (score) => {
-    const message = score >= 80 ? '🎉 Excellent work!' : score >= 60 ? '👍 Good job!' : '💪 Keep practicing!';
-    alert(`${message} Your score: ${score}%`);
-    setSelectedQuiz(null);
-    setStats(prev => ({ 
-      ...prev, 
-      completedQuizzes: prev.completedQuizzes + 1,
-      averageScore: Math.round((prev.averageScore * prev.completedQuizzes + score) / (prev.completedQuizzes + 1))
-    }));
+  const handleSubmitQuiz = async (answers, timeSpent) => {
+    try {
+      const response = await submitQuiz(selectedQuiz._id, { attemptId, answers, timeSpent });
+      if (response.data.success) {
+        setSelectedQuiz(null);
+        setAttemptId(null);
+        fetchStats(); // Refresh stats after submission
+        return response;
+      } else {
+        throw new Error(response.data.message || 'Failed to submit quiz');
+      }
+    } catch (err) {
+      throw err;
+    }
   };
 
   const filteredQuizzes = quizzes.filter(quiz => {
@@ -88,7 +158,15 @@ const Dashboard = () => {
   };
 
   if (selectedQuiz) {
-    return <QuizTaker quiz={selectedQuiz} onComplete={handleComplete} onBack={() => setSelectedQuiz(null)} />;
+    return (
+      <QuizTaker
+        quiz={selectedQuiz}
+        onSubmit={handleSubmitQuiz}
+        onBack={() => { setSelectedQuiz(null); setAttemptId(null); fetchStats(); }}
+        attemptId={attemptId}
+        onStatsUpdate={fetchStats}
+      />
+    );
   }
 
   if (showGenerator) {
@@ -98,7 +176,6 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h1 className="text-4xl font-bold text-gray-900 mb-2">Quiz Dashboard</h1>
@@ -122,7 +199,6 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-500">
             <div className="flex items-center justify-between">
@@ -165,7 +241,6 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Controls */}
         <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
           <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
             <div className="flex-1 flex gap-4 items-center">
@@ -205,7 +280,6 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Quiz Grid */}
         {loading ? (
           <div className="flex justify-center items-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -232,7 +306,7 @@ const Dashboard = () => {
               <div 
                 key={quiz._id} 
                 className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow cursor-pointer overflow-hidden"
-                onClick={() => setSelectedQuiz(quiz)}
+                onClick={() => handleStartQuiz(quiz._id)}
               >
                 <div className="p-6">
                   <div className="flex items-start justify-between mb-4">
@@ -267,7 +341,6 @@ const Dashboard = () => {
           </div>
         )}
 
-        {/* Performance Tracker */}
         <div className="mt-8">
           <PerformanceTracker />
         </div>
@@ -275,4 +348,5 @@ const Dashboard = () => {
     </div>
   );
 };
+
 export default Dashboard;

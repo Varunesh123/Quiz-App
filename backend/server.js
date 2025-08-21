@@ -21,10 +21,10 @@ const userRoutes = require('./routes/userRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
 
 const app = express();
-
+// console.log("Connecting to MongoDB...")
 // Connect to MongoDB
 connectDB();
-
+// console.log("Connected to MongoDB successfully.");
 // Security Middleware
 app.use(helmet({
   contentSecurityPolicy: {
@@ -69,21 +69,25 @@ app.use(hpp());
 app.use(compression());
 
 // CORS configuration
-const corsOptions = {
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://yourapp.com', 'https://www.yourapp.com']
-    : ['http://localhost:3000', 'http://localhost:3001'],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-};
+// const corsOptions = {
+//   origin: process.env.NODE_ENV === 'production' 
+//     ? ['quiz-app-psi-ivory.vercel.app', 'quiz-pfu9a9w1s-varunesh123s-projects.vercel.app']
+//     : ['http://localhost:5173', 'http://localhost:5173'],
+//   credentials: true,
+//   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+//   allowedHeaders: ['Content-Type', 'Authorization']
+// };
 
-app.use(cors(corsOptions));
+app.use(cors({
+  origin: "http://localhost:5173",
+  credentials: true
+}));
 
+app.use(morgan('dev'));
 // Logging middleware
-if (process.env.NODE_ENV === 'development') {
-  app.use(morgan('combined', { stream: { write: message => logger.info(message.trim()) } }));
-}
+// if (process.env.NODE_ENV === 'development') {
+  // app.use(morgan('combined', { stream: { write: message => logger.info(message.trim()) } }));
+// }
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

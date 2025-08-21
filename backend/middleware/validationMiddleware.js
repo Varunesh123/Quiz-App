@@ -47,8 +47,8 @@ const validateLogin = [
 const validateQuiz = [
   body('title')
     .trim()
-    .isLength({ min: 5, max: 100 })
-    .withMessage('Title must be between 5 and 100 characters'),
+    .isLength({ min: 1, max: 100 })
+    .withMessage('Title must be between 1 and 100 characters'),
   body('category')
     .trim()
     .notEmpty()
