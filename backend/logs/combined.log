@@ -185,3 +185,5 @@
 {"level":"info","message":"Quiz completed: Java by alok0905@gmail.com, Score: 100%","service":"quiz-api","timestamp":"2025-08-21T06:49:35.715Z"}
 {"level":"info","message":"Quiz attempt started: Python Basics Quiz by alok0905@gmail.com","service":"quiz-api","timestamp":"2025-08-21T06:49:48.496Z"}
 {"level":"info","message":"Quiz completed: Python Basics Quiz by alok0905@gmail.com, Score: 100%","service":"quiz-api","timestamp":"2025-08-21T06:49:51.435Z"}
+{"level":"info","message":"Server running in production mode on port 5000","service":"quiz-api","timestamp":"2025-08-21T06:56:49.619Z"}
+{"level":"info","message":"Quiz created: Python by alok0905@gmail.com","service":"quiz-api","timestamp":"2025-08-21T06:58:38.648Z"}

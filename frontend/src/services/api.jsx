@@ -2,13 +2,13 @@ import axios from 'axios';
 
 // Helper function to construct API routes
 const getApiUrl = (endpoint) => {
-  const baseUrl = 'http://localhost:5000/api';
+  const baseUrl = 'https://quiz-app-6dcq.onrender.com/api'; // Use the environment variable if needed
   console.log('Constructed URL:', `${baseUrl}${endpoint}`); // Debug
   return `${baseUrl}${endpoint}`;
 };
 
 const api = axios.create({
-  baseURL: 'http://localhost:5000/api',
+  baseURL: 'https://quiz-app-6dcq.onrender.com/',
 });
 
 api.interceptors.request.use((config) => {
