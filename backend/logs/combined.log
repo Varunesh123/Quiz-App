@@ -177,3 +177,11 @@
 {"level":"info","message":"Quiz completed: Java by alok123@gmail.com, Score: 0%","service":"quiz-api","timestamp":"2025-08-21T06:32:47.794Z"}
 {"level":"info","message":"Server running in production mode on port 5000","service":"quiz-api","timestamp":"2025-08-21T06:33:31.425Z"}
 {"level":"info","message":"Server running in production mode on port 5000","service":"quiz-api","timestamp":"2025-08-21T06:33:39.128Z"}
+{"level":"info","message":"Server running in production mode on port 5000","service":"quiz-api","timestamp":"2025-08-21T06:47:15.721Z"}
+{"level":"error","message":"Database connection error: Server selection timed out after 10000 ms","service":"quiz-api","timestamp":"2025-08-21T06:47:26.352Z"}
+{"level":"info","message":"Server running in production mode on port 5000","service":"quiz-api","timestamp":"2025-08-21T06:48:02.230Z"}
+{"level":"info","message":"User logged in: alok0905@gmail.com","service":"quiz-api","timestamp":"2025-08-21T06:49:24.994Z"}
+{"level":"info","message":"Quiz attempt started: Java by alok0905@gmail.com","service":"quiz-api","timestamp":"2025-08-21T06:49:32.968Z"}
+{"level":"info","message":"Quiz completed: Java by alok0905@gmail.com, Score: 100%","service":"quiz-api","timestamp":"2025-08-21T06:49:35.715Z"}
+{"level":"info","message":"Quiz attempt started: Python Basics Quiz by alok0905@gmail.com","service":"quiz-api","timestamp":"2025-08-21T06:49:48.496Z"}
+{"level":"info","message":"Quiz completed: Python Basics Quiz by alok0905@gmail.com, Score: 100%","service":"quiz-api","timestamp":"2025-08-21T06:49:51.435Z"}
